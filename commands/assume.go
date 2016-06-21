@@ -17,7 +17,9 @@ var (
 )
 
 type CmdAssume struct {
-	Role        string `short:"r" long:"role" description:"role to use" default:"default"`
+	Alias       string `short:"a" long:"alias" description:"alias to use from roles file"`
+	Role        string `short:"r" long:"role" description:"arn role to use"`
+	Session     string `short:"s" long:"session" description:"session name to use"`
 	credentials *awsCredentials
 	awsSession  string
 	awsArn      string
@@ -29,30 +31,21 @@ type awsCredentials struct {
 	Token     string
 }
 
-func NewCmdAssume() *CmdAssume {
-	return &CmdAssume{}
-}
-
 func (c *CmdAssume) Execute(args []string) error {
-	roleInfo, err := loadRolesFile(rolesFile).GetSection(c.Role)
+	if c.Alias != "" && c.Role == "" && c.Session == "" {
+		c.awsArn = c.getArnOfAliasFromFile(rolesFile)
+		c.awsSession = c.Alias
+	} else if c.Alias == "" && c.Role != "" && c.Session != "" {
+		c.awsArn = c.Role
+		c.awsSession = c.Session
+	}
+
+	err := c.askForAWSCredentials()
 	if err != nil {
 		return err
 	}
 
-	arn, err := roleInfo.GetKey("arn")
-	if err != nil {
-		return err
-	}
-
-	c.awsSession = c.Role
-	c.awsArn = arn.String()
-
-	err = c.generateAWSCredentials()
-	if err != nil {
-		return err
-	}
-
-	c.saveAWSCredentials(awsCredentialsFile)
+	err = c.saveAWSCredentials(awsCredentialsFile)
 	if err != nil {
 		return err
 	}
@@ -60,7 +53,7 @@ func (c *CmdAssume) Execute(args []string) error {
 	return nil
 }
 
-func (c *CmdAssume) generateAWSCredentials() error {
+func (c *CmdAssume) askForAWSCredentials() error {
 	svc := sts.New(session.New())
 	resp, err := svc.AssumeRole(&sts.AssumeRoleInput{
 		RoleArn:         aws.String(c.awsArn),
@@ -80,17 +73,18 @@ func (c *CmdAssume) generateAWSCredentials() error {
 	return nil
 }
 
-func loadRolesFile(rolesFile string) *ini.File {
-	roles, err := ini.Load(rolesFile)
-
+func (c *CmdAssume) getArnOfAliasFromFile(rolesFile string) string {
+	file, _ := ini.Load(rolesFile)
+	role, _ := file.GetSection(c.Alias)
+	arn, err := role.GetKey("arn")
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	return roles
+	return arn.String()
 }
 
-func (c *CmdAssume) saveAWSCredentials(credentialsFile string) {
+func (c *CmdAssume) saveAWSCredentials(credentialsFile string) error {
 	cfg := ini.Empty()
 	cfg.NewSection(c.awsSession)
 	cfg.Section(c.awsSession).NewKey("aws_access_key_id", c.credentials.AccessKey)
@@ -100,6 +94,8 @@ func (c *CmdAssume) saveAWSCredentials(credentialsFile string) {
 	err := cfg.SaveTo(awsCredentialsFile)
 
 	if err != nil {
-		log.Fatal(err)
+		return err
 	}
+
+	return nil
 }

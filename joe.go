@@ -10,7 +10,8 @@ import (
 
 func main() {
 	parser := flags.NewNamedParser("joe", flags.Default)
-	parser.AddCommand("assume", "assume role", "", commands.NewCmdAssume())
+	parser.AddCommand("assume", "assume role", "", &commands.CmdAssume{})
+	parser.AddCommand("clean", "clean generated files", "", &commands.CmdClean{})
 
 	_, err := parser.Parse()
 	if err != nil {
