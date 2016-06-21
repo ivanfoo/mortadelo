@@ -1,0 +1,5 @@
+#Ignore compiled file
+joe
+
+#Ignore any .ini file
+*.ini
