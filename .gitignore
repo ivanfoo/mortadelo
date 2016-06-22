@@ -1,5 +1,8 @@
-#Ignore compiled file
-joe
+#Compiled file
+mortadelo
 
-#Ignore any .ini file
+#.ini files
 *.ini
+
+#tgz files
+*.tgz

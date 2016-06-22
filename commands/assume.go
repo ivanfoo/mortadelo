@@ -13,7 +13,7 @@ import (
 
 var (
 	awsCredentialsFile = fmt.Sprintf("%s/%s/%s", os.Getenv("HOME"), ".aws", "credentials")
-	rolesFile          = fmt.Sprintf("%s/%s/%s", os.Getenv("HOME"), ".joe", "roles")
+	rolesFile          = fmt.Sprintf("%s/%s/%s", os.Getenv("HOME"), ".mortadelo", "roles")
 )
 
 type CmdAssume struct {
