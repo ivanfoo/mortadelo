@@ -38,6 +38,8 @@ func (c *CmdAssume) Execute(args []string) error {
 	} else if c.Alias == "" && c.Role != "" && c.Session != "" {
 		c.awsArn = c.Role
 		c.awsSession = c.Session
+	} else {
+		return nil
 	}
 
 	err := c.askForAWSCredentials()
@@ -49,6 +51,8 @@ func (c *CmdAssume) Execute(args []string) error {
 	if err != nil {
 		return err
 	}
+
+	fmt.Println("Temporal credentials saved in ~/.aws/credentials")
 
 	return nil
 }
