@@ -1,6 +1,10 @@
 package commands
 
-import "gopkg.in/ini.v1"
+import (
+	"fmt"
+
+	"gopkg.in/ini.v1"
+)
 
 type CmdConfigure struct {
 	Alias     string `short:"a" long:"alias" description:"role alias" default:"default"`
@@ -9,11 +13,16 @@ type CmdConfigure struct {
 }
 
 func (c *CmdConfigure) Execute(args []string) error {
-	cfg := ini.Empty()
+	cfg, err := ini.LooseLoad(c.RolesFile)
+
+	if err != nil {
+		fmt.Println("Creating new roles file...")
+	}
+
 	cfg.NewSection(c.Alias)
 	cfg.Section(c.Alias).NewKey("arn", c.Arn)
 
-	err := cfg.SaveTo(c.RolesFile)
+	err = cfg.SaveTo(c.RolesFile)
 
 	if err != nil {
 		return err

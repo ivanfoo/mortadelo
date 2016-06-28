@@ -89,13 +89,18 @@ func (c *CmdAssume) getArnOfAliasFromFile(rolesFile string) string {
 }
 
 func (c *CmdAssume) saveAWSCredentials(credentialsFile string) error {
-	cfg := ini.Empty()
+	cfg, err := ini.LooseLoad(awsCredentialsFile)
+
+	if err != nil {
+		fmt.Println("Creating new credentials file...")
+	}
+
 	cfg.NewSection(c.awsSession)
 	cfg.Section(c.awsSession).NewKey("aws_access_key_id", c.credentials.AccessKey)
 	cfg.Section(c.awsSession).NewKey("aws_secret_access_key", c.credentials.SecretKey)
 	cfg.Section(c.awsSession).NewKey("aws_security_token", c.credentials.Token)
 
-	err := cfg.SaveTo(awsCredentialsFile)
+	err = cfg.SaveTo(awsCredentialsFile)
 
 	if err != nil {
 		return err
