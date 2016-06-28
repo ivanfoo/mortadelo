@@ -8,11 +8,17 @@ Mortadelo makes assming AWS roles pretty simple, asking for temporary AWS creden
 
 ### Installation
 
+You should install the latest compiled release (recommended):
+
 ```
-wget https://github.com/ivanfoo/mortadelo/releases/download/v0.1.0/mortadelo_v0.1.0.tgz
-tar -xfv mortadelo_v0.1.0.tgz
+wget https://github.com/ivanfoo/mortadelo/releases/download/v0.1.1/mortadelo_linux_v0.1.1.tgz
+tar -xfv mortadelo_linux_v0.1.1.tgz
 cp mortadelo /usr/local/bin/
 ```
+
+Also, you can get the latest changes running the classical:
+
+`go get -v github.com/ivanfoo/mortadelo`
 
 ### How to use it
 
@@ -45,9 +51,9 @@ Available commands:
 **Roles file example**
 
 ```
-[alias_for_foo]
+[foo]
 arn = arn:aws:iam::xxxxxxxxxxxx:role/foo
 
-[alias_for_bar]
+[bar]
 arn = arn:aws:iam::yyyyyyyyyyyy:role/bar
 ```
