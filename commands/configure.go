@@ -7,13 +7,12 @@ import (
 )
 
 type CmdConfigure struct {
-	Alias     string `short:"a" long:"alias" description:"role alias" default:"default"`
-	Arn       string `short:"r" long:"role" description:"arn role" required:"true"`
-	RolesFile string `short:"f" long:"file" description:"roles file" default:"~/.mortadelo/roles"`
+	Alias string `short:"a" long:"alias" description:"role alias" default:"default"`
+	Arn   string `short:"r" long:"role" description:"arn role" required:"true"`
 }
 
 func (c *CmdConfigure) Execute(args []string) error {
-	cfg, err := ini.LooseLoad(c.RolesFile)
+	cfg, err := ini.LooseLoad(aliasFile)
 
 	if err != nil {
 		fmt.Println("Creating new roles file...")
@@ -22,7 +21,7 @@ func (c *CmdConfigure) Execute(args []string) error {
 	cfg.NewSection(c.Alias)
 	cfg.Section(c.Alias).NewKey("arn", c.Arn)
 
-	err = cfg.SaveTo(c.RolesFile)
+	err = cfg.SaveTo(aliasFile)
 
 	if err != nil {
 		return err

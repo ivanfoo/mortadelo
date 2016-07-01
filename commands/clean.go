@@ -14,14 +14,14 @@ func (c *CmdClean) Execute(args []string) error {
 		os.Remove(awsCredentialsFile)
 		fmt.Println("deleted " + awsCredentialsFile)
 
-		os.Remove(rolesFile)
-		fmt.Println("deleted " + rolesFile)
+		os.Remove(aliasFile)
+		fmt.Println("deleted " + aliasFile)
 
 		return nil
 	}
 
-	if userSayingYesToMessage("About to delete " + rolesFile + ". You sure? [y/n] ") {
-		os.Remove(rolesFile)
+	if userSayingYesToMessage("About to delete " + aliasFile + ". You sure? [y/n] ") {
+		os.Remove(aliasFile)
 		fmt.Println("done")
 	}
 
@@ -31,7 +31,6 @@ func (c *CmdClean) Execute(args []string) error {
 	}
 
 	return nil
-
 }
 
 func userSayingYesToMessage(message string) bool {
