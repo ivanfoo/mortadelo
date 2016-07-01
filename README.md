@@ -12,7 +12,7 @@ You should install the latest compiled release (recommended):
 
 ```
 wget https://github.com/ivanfoo/mortadelo/releases/download/v0.2.0/mortadelo_linux_v0.2.0.tgz
-tar -xfv mortadelo_linux_v0.2.0.tgz
+tar xfv mortadelo_linux_v0.2.0.tgz
 cp mortadelo /usr/local/bin/
 ```
 
