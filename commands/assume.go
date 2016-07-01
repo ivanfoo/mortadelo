@@ -136,7 +136,7 @@ func (c *CmdAssume) getArnFromAliasFile(aliasFile string) string {
 	return arn.String()
 }
 
-func (c *CmdAssume) getMfaSerialNumber(arn string) (string, error) {
+func (c *CmdAssume) getMfaSerialNumber(arn string) string {
 	svc := iam.New(session.New())
 	re := regexp.MustCompile(`iam\:\:\d+\:\w+\/([\w=\-\,\.\=\@]+)`)
 	userName := re.FindStringSubmatch(arn)[1]
@@ -150,7 +150,7 @@ func (c *CmdAssume) getMfaSerialNumber(arn string) (string, error) {
 		fmt.Errorf("Error getting mfa serial number")
 	}
 
-	return *mfaDevice.MFADevices[0].SerialNumber, nil
+	return *mfaDevice.MFADevices[0].SerialNumber
 }
 
 func (c *CmdAssume) saveAWSCredentials(credentialsFile string) error {
