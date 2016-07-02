@@ -1,7 +1,6 @@
-# Mortadelo CLI tool
-
 [![Build Status](https://travis-ci.org/ivanfoo/mortadelo.svg?branch=master)](https://travis-ci.org/ivanfoo/mortadelo) [![codecov](https://codecov.io/gh/ivanfoo/mortadelo/branch/master/graph/badge.svg)](https://codecov.io/gh/ivanfoo/mortadelo)
 
+# Mortadelo CLI tool
 
 `THIS TOOL IS UNDER HEAVY DEVELOPMENT`
 
