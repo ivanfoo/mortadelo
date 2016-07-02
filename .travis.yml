@@ -1,17 +1,21 @@
 language: go
-
 go:
-  - 1.5
-
+- 1.5
 before_install:
-  # codecov
-  - pip install --user codecov
-
+- pip install --user codecov
 install:
-  - make dependencies
-
+- make dependencies
 script:
-  - make test-coverage
-
+- make test-coverage
 after_success:
-  - bash <(curl -s https://codecov.io/bash)
+- bash <(curl -s https://codecov.io/bash)
+deploy:
+  provider: releases
+  api-key:
+    secure: pZUeC9ZybsaDfkOkm/s/ja8pE10S8NgvKWGG5ikCa79L5/nygnDAgpcL4jfvR2BMQrtOA9Bexe8yiovPazaCdPbTOPlys/iY0A5cVRLCCEG7S0nkBlGhd2xwbjHsPAPYHwCX7C5NgCz/s3oGU1IuCQoAG+/gH2EqeBSIbS+s9UcehLSSwzhOlZ9zQwIuH0EY79TwbiVGYlnze00eqMJtiSvUoamSJciZwJlpX/VGrqkyTYUwee5jJfNpU3k9YQ5mkBu8nmBk8ga173t7Ik0MEbKCB99UGpDW0MijvJ6cAxqdbjJFSOfQtGI4kgcJnFg3qV0nstDFjrbbiDZSTMIxJXECx6aXf8cMyj+vXl5qh5O7IHzXfb24RFF/xBjmd4YCjUiWqPUUDzq8x14g0/n+WnICbgrpJfkWRHZTfaJMhDDrW3Ag00Op2QiM8+dwHwdxEo7F8ekiO0tcG3sLZYqfRo+desPEvymHs48qejqtwml02ILVSiWhvIkUkEfVxpz5BE3GQc7Q0bbU/55NFYJ5ZszSAKkK5Khg++aqZqSQp+69ptdgL//Z4NC104HfC/kxXg80MyESJ0UW3DQ4FwBheHH9Ljy+6jOKjOsjykq3Pu+FFe7BEcHm+QICwHuZeFi/5r+/bFYSAu6wzg76OD1E9rZ+BGUycIJWRWpgJitkUw8=
+  file:
+  - artifacts/mortadelo_${TRAVIS_TAG}_darwin_amd64.tar.gz
+  - artifacts/mortadelo_${TRAVIS_TAG}_linux_amd64.tar.gz"
+  skip_cleanup: true
+  on:
+    tags: true
