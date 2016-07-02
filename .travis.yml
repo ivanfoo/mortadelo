@@ -3,5 +3,15 @@ language: go
 go:
   - 1.5
 
+before_install:
+  # codecov
+  - pip install --user codecov
+
+install:
+  - make dependencies
+
+script:
+  - make test-coverage
+
 after_success:
   - bash <(curl -s https://codecov.io/bash)
