@@ -2,7 +2,6 @@ package commands
 
 import (
 	"fmt"
-	"log"
 	"regexp"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -11,6 +10,8 @@ import (
 	"github.com/aws/aws-sdk-go/service/sts"
 	"gopkg.in/ini.v1"
 )
+
+var err error
 
 type CmdAssume struct {
 	Alias   string `short:"a" long:"alias" description:"alias to use from roles file"`
@@ -35,7 +36,7 @@ func (c *CmdAssume) Execute(args []string) error {
 	}
 
 	if c.MFA {
-		err = c.setAwsCredentialsWithMFA()
+		err = c.setAWSCredentialsUsingMFA()
 	} else {
 		err = c.setAWSCredentials()
 	}
@@ -50,35 +51,62 @@ func (c *CmdAssume) Execute(args []string) error {
 		return err
 	}
 
-	fmt.Println("Temporary credentials saved in ~/.aws/credentials")
+	fmt.Println("temporary credentials saved in ~/.aws/credentials")
 
 	return nil
 }
 
 func (c *CmdAssume) validate() error {
 	if c.Alias != "" && c.Role == "" && c.Session == "" {
-		c.Role = c.getArnFromAliasFile(aliasFile)
+		c.Role, err = c.getArnFromAliasFile(aliasFile)
+		if err != nil {
+			return err
+		}
 		c.Session = c.Alias
 		return nil
 	} else if c.Alias == "" && c.Role != "" && c.Session != "" {
 		return nil
 	}
 
-	return fmt.Errorf("You must use either -a or -r flag")
+	return fmt.Errorf("use either -a or -r flag")
 }
 
-func (c *CmdAssume) setAwsCredentialsWithMFA() error {
-	svc := sts.New(session.New())
+func (c *CmdAssume) setAWSCredentials() error {
+	session := sts.New(session.New())
 
-	identity, _ := svc.GetCallerIdentity(&sts.GetCallerIdentityInput{})
-	mfaSerialNumber := c.getMfaSerialNumber(*identity.Arn)
+	resp, err := session.AssumeRole(&sts.AssumeRoleInput{
+		RoleArn:         aws.String(c.Role),
+		RoleSessionName: aws.String(c.Session),
+	})
+
+	if err != nil {
+		return fmt.Errorf("unable to get valid aws credentials")
+	}
+
+	c.credentials = &awsCredentials{
+		AccessKey: *resp.Credentials.AccessKeyId,
+		SecretKey: *resp.Credentials.SecretAccessKey,
+		Token:     *resp.Credentials.SessionToken,
+	}
+
+	return nil
+}
+
+func (c *CmdAssume) setAWSCredentialsUsingMFA() error {
+	session := sts.New(session.New())
+	identity, _ := session.GetCallerIdentity(&sts.GetCallerIdentityInput{})
+	mfaSerialNumber, err := c.getMfaSerialNumber(*identity.Arn)
+
+	if err != nil {
+		return fmt.Errorf("unable to get a valid mfa serial number")
+	}
 
 	var mfaTokenCode string
 
-	fmt.Print("Insert MFA code: ")
+	fmt.Print("Insert MFA token: ")
 	fmt.Scanf("%s", &mfaTokenCode)
 
-	resp, err := svc.AssumeRole(&sts.AssumeRoleInput{
+	resp, err := session.AssumeRole(&sts.AssumeRoleInput{
 		RoleArn:         aws.String(c.Role),
 		RoleSessionName: aws.String(c.Session),
 		SerialNumber:    aws.String(mfaSerialNumber),
@@ -86,7 +114,7 @@ func (c *CmdAssume) setAwsCredentialsWithMFA() error {
 	})
 
 	if err != nil {
-		return err
+		return fmt.Errorf("unable to get valid aws credentials")
 	}
 
 	c.credentials = &awsCredentials{
@@ -98,66 +126,50 @@ func (c *CmdAssume) setAwsCredentialsWithMFA() error {
 	return nil
 }
 
-func (c *CmdAssume) setAWSCredentials() error {
-	svc := sts.New(session.New())
-
-	resp, err := svc.AssumeRole(&sts.AssumeRoleInput{
-		RoleArn:         aws.String(c.Role),
-		RoleSessionName: aws.String(c.Session),
-	})
-
-	if err != nil {
-		return fmt.Errorf("Authentication failed. Maybe you should use a MFA token?")
-	}
-
-	c.credentials = &awsCredentials{
-		AccessKey: *resp.Credentials.AccessKeyId,
-		SecretKey: *resp.Credentials.SecretAccessKey,
-		Token:     *resp.Credentials.SessionToken,
-	}
-
-	return nil
-}
-
-func (c *CmdAssume) getArnFromAliasFile(aliasFile string) string {
+func (c *CmdAssume) getArnFromAliasFile(aliasFile string) (string, error) {
 	file, err := ini.Load(aliasFile)
 
 	if err != nil {
-		log.Fatal(aliasFile + " not found")
+		return "", fmt.Errorf("unable to open " + aliasFile)
 	}
 
-	role, _ := file.GetSection(c.Alias)
-	arn, err := role.GetKey("arn")
+	alias, err := file.GetSection(c.Alias)
 
 	if err != nil {
-		log.Fatal(err)
+		return "", fmt.Errorf("alias not found in file")
 	}
 
-	return arn.String()
+	arn, err := alias.GetKey("arn")
+
+	if err != nil {
+		return "", fmt.Errorf("malformed alias file: missing arn key")
+	}
+
+	return arn.String(), nil
 }
 
-func (c *CmdAssume) getMfaSerialNumber(arn string) string {
-	svc := iam.New(session.New())
+func (c *CmdAssume) getMfaSerialNumber(arn string) (string, error) {
+	session := iam.New(session.New())
 	re := regexp.MustCompile(`iam\:\:\d+\:\w+\/([\w=\-\,\.\=\@]+)`)
 	userName := re.FindStringSubmatch(arn)[1]
 
-	mfaDevice, err := svc.ListMFADevices(&iam.ListMFADevicesInput{
+	mfaDevice, err := session.ListMFADevices(&iam.ListMFADevicesInput{
 		MaxItems: aws.Int64(1),
 		UserName: aws.String(userName),
 	})
 
 	if err != nil {
-		fmt.Errorf("Error getting mfa serial number")
+		return "", fmt.Errorf("unable to get a valid mfa serial number")
 	}
 
-	return *mfaDevice.MFADevices[0].SerialNumber
+	return *mfaDevice.MFADevices[0].SerialNumber, nil
 }
 
 func (c *CmdAssume) saveAWSCredentials(credentialsFile string) error {
 	cfg, err := ini.LooseLoad(awsCredentialsFile)
 
 	if err != nil {
-		fmt.Println("Creating new credentials file...")
+		fmt.Println("creating new credentials file...")
 	}
 
 	cfg.NewSection(c.Session)
@@ -168,7 +180,7 @@ func (c *CmdAssume) saveAWSCredentials(credentialsFile string) error {
 	err = cfg.SaveTo(awsCredentialsFile)
 
 	if err != nil {
-		return err
+		return fmt.Errorf("saving credentials file failed")
 	}
 
 	return nil

@@ -1,7 +1,7 @@
 package main
 
 import (
-	"log"
+	"os"
 
 	"github.com/ivanfoo/mortadelo/commands"
 
@@ -16,6 +16,7 @@ func main() {
 
 	_, err := parser.Parse()
 	if err != nil {
-		log.Fatal(err)
+		os.Exit(1)
 	}
+
 }

@@ -11,10 +11,20 @@ type CmdClean struct {
 
 func (c *CmdClean) Execute(args []string) error {
 	if c.Force {
-		os.Remove(awsCredentialsFile)
+		err := os.Remove(awsCredentialsFile)
+
+		if err != nil {
+			return fmt.Errorf("delete " + awsCredentialsFile + " failed")
+		}
+
 		fmt.Println("deleted " + awsCredentialsFile)
 
 		os.Remove(aliasFile)
+
+		if err != nil {
+			return fmt.Errorf("delete " + aliasFile + " failed")
+		}
+
 		fmt.Println("deleted " + aliasFile)
 
 		return nil
@@ -38,7 +48,8 @@ func userSayingYesToMessage(message string) bool {
 	var userInput string
 	fmt.Scanf("%s", &userInput)
 
-	if userInput == "y" {
+	switch userInput {
+	case "y", "yes", "Yes":
 		return true
 	}
 

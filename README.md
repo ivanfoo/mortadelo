@@ -39,11 +39,11 @@ Available commands:
 
 `mortadelo assume -r arn:aws:iam::xxxxxxxxxxxx:role/foo -s foo`
 
-**Using an alias for a role configured in a file (~/.mortadelo/roles by default)**
+**Using an alias for a role configured in a file (~/.mortadelo/alias by default)**
 
 `mortadelo assume -a bar`
 
-**Configuring a new roles alias file (~/.mortadelo/roles by default):**
+**Configuring a new roles alias file (~/.mortadelo/alias by default):**
 
 `mortadelo configure -a bar`-r arn:aws:iam::xxxxxxxxxxxx:role/bar`
  

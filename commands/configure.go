@@ -15,16 +15,25 @@ func (c *CmdConfigure) Execute(args []string) error {
 	cfg, err := ini.LooseLoad(aliasFile)
 
 	if err != nil {
-		fmt.Println("Creating new roles file...")
+		fmt.Println("creating new alias file...")
 	}
 
-	cfg.NewSection(c.Alias)
+	_, err = cfg.NewSection(c.Alias)
+
+	if err != nil {
+		return fmt.Errorf("creating alias failed")
+	}
+
 	cfg.Section(c.Alias).NewKey("arn", c.Arn)
+
+	if err != nil {
+		return fmt.Errorf("setting arn value failed")
+	}
 
 	err = cfg.SaveTo(aliasFile)
 
 	if err != nil {
-		return err
+		return fmt.Errorf("saving alias file failed")
 	}
 
 	return nil
