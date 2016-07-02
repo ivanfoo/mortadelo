@@ -1,6 +1,6 @@
-[![GitHub version](https://badge.fury.io/gh/ivanfoo%2Fmortadelo.svg)](https://badge.fury.io/gh/ivanfoo%2Fmortadelo) [![Build Status](https://travis-ci.org/ivanfoo/mortadelo.svg?branch=master)](https://travis-ci.org/ivanfoo/mortadelo) [![codecov](https://codecov.io/gh/ivanfoo/mortadelo/branch/master/graph/badge.svg)](https://codecov.io/gh/ivanfoo/mortadelo)
-
 # Mortadelo CLI tool
+
+[![GitHub version](https://badge.fury.io/gh/ivanfoo%2Fmortadelo.svg)](https://badge.fury.io/gh/ivanfoo%2Fmortadelo) [![Build Status](https://travis-ci.org/ivanfoo/mortadelo.svg?branch=master)](https://travis-ci.org/ivanfoo/mortadelo) [![codecov](https://codecov.io/gh/ivanfoo/mortadelo/branch/master/graph/badge.svg)](https://codecov.io/gh/ivanfoo/mortadelo)
 
 `THIS TOOL IS UNDER HEAVY DEVELOPMENT`
 

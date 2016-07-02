@@ -12,6 +12,16 @@ type CmdConfigure struct {
 }
 
 func (c *CmdConfigure) Execute(args []string) error {
+	err = c.setupNewAlias(aliasFile)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c *CmdConfigure) setupNewAlias(aliasFile string) error {
 	cfg, err := ini.LooseLoad(aliasFile)
 
 	if err != nil {

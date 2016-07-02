@@ -14,11 +14,14 @@ const (
 )
 
 func TestCmdConfigure(t *testing.T) {
-	cfg, _ := ini.LooseLoad(testAliasFile)
-	cfg.NewSection(testAlias)
-	cfg.Section(testAlias).NewKey("arn", testArn)
-	cfg.SaveTo(testAliasFile)
+	cmd := &CmdConfigure{
+		Alias: testAlias,
+		Arn:   testArn,
+	}
 
+	cmd.setupNewAlias(testAliasFile)
+
+	cfg, _ := ini.LooseLoad(testAliasFile)
 	alias, _ := cfg.GetSection(testAlias)
 
 	if alias.Name() != testAlias {
