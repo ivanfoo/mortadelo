@@ -53,20 +53,18 @@ test-coverage:
 
 packages:
 	for os in $(PKG_OS); do \
-		for arch in $(PKG_ARCH); do \
+		cd $(BUILD_PATH); \
+		mkdir -p $(ARTIFACTS_PATH)/$(PROJECT)_$${os}_$${arch}; \
+		for cmd in $(COMMANDS); do \
+			if [ -d "$${cmd}" ]; then \
+				cd $${cmd}; \
+			fi; \
+			GOOS=$${os} GOARCH=$${arch} $(GOCMD) build -ldflags \
+			"-X main.version=$(BRANCH) -X main.build=$(BUILD) -X main.commit=$(COMMIT)" \
+			-o "$(ARTIFACTS_PATH)/$(PROJECT)_$${os}_$${arch}/`basename $${PWD}`" .; \
 			cd $(BUILD_PATH); \
-			mkdir -p $(ARTIFACTS_PATH)/$(PROJECT)_$${os}_$${arch}; \
-			for cmd in $(COMMANDS); do \
-				if [ -d "$${cmd}" ]; then \
-					cd $${cmd}; \
-				fi; \
-				GOOS=$${os} GOARCH=$${arch} $(GOCMD) build -ldflags \
-				"-X main.version=$(BRANCH) -X main.build=$(BUILD) -X main.commit=$(COMMIT)" \
-				-o "$(ARTIFACTS_PATH)/$(PROJECT)_$${os}_$${arch}/`basename $${PWD}`" .; \
-				cd $(BUILD_DIR); \
-			done; \
-			cd $(ARTIFACTS_PATH); \
-			tar -cvzf $(PROJECT)_$(BRANCH)_$${os}_$${arch}.tar.gz $(PROJECT)_$${os}_$${arch}/; \
 		done; \
+		cd $(ARTIFACTS_PATH); \
+		tar cvzf $(PROJECT)_$(BRANCH)_$${os}_$${arch}.tgz $(PROJECT)_$${os}_$${arch}/; \
 	done; \
 
