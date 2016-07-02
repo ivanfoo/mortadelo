@@ -31,7 +31,7 @@ ifneq ($(origin CI), undefined)
 	COMMIT := $(shell echo $(TRAVIS_COMMIT) | cut -c1-10)
 	BRANCH := $(TRAVIS_BRANCH)
 	BUILD_PATH := $(TRAVIS_BUILD_DIR)
-	ARTIFACTS_PATH := $(TRAVIS_BUILD_DIR)/artifacst
+	ARTIFACTS_PATH := $(TRAVIS_BUILD_DIR)/artifacts
 endif
 
 dependencies:
