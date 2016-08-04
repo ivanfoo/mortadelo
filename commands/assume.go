@@ -4,20 +4,23 @@ import (
 	"fmt"
 	"regexp"
 
-	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/sts"
 	"gopkg.in/ini.v1"
 )
 
-var err error
+var (
+	err           error
+	maxMfaDevices int64 = 1
+)
 
 type CmdAssume struct {
-	Alias   string `short:"a" long:"alias" description:"alias to use from roles file"`
-	Role    string `short:"r" long:"role" description:"arn role to use"`
-	Session string `short:"s" long:"session" description:"session name to use"`
-	MFA     bool   `long:"mfa" description:"use mfa token"`
+	Alias    string `short:"a" long:"alias" description:"alias to use from roles file"`
+	Role     string `short:"r" long:"role" description:"arn role to use"`
+	Session  string `short:"s" long:"session" description:"session name to use"`
+	MFA      bool   `long:"mfa" description:"ask for a mfa token"`
+	Duration int64  `short:"d" long:"duration" description:"duration of the session in seconds" default:"900"`
 
 	credentials *awsCredentials
 }
@@ -74,9 +77,17 @@ func (c *CmdAssume) validate() error {
 func (c *CmdAssume) setAWSCredentials() error {
 	session := sts.New(session.New())
 
+	var (
+		mfaTokenCode    string
+		mfaSerialNumber string
+	)
+
 	resp, err := session.AssumeRole(&sts.AssumeRoleInput{
-		RoleArn:         aws.String(c.Role),
-		RoleSessionName: aws.String(c.Session),
+		RoleArn:         &c.Role,
+		DurationSeconds: &c.Duration,
+		RoleSessionName: &c.Session,
+		SerialNumber:    &mfaSerialNumber,
+		TokenCode:       &mfaTokenCode,
 	})
 
 	if err != nil {
@@ -107,10 +118,11 @@ func (c *CmdAssume) setAWSCredentialsUsingMFA() error {
 	fmt.Scanf("%s", &mfaTokenCode)
 
 	resp, err := session.AssumeRole(&sts.AssumeRoleInput{
-		RoleArn:         aws.String(c.Role),
-		RoleSessionName: aws.String(c.Session),
-		SerialNumber:    aws.String(mfaSerialNumber),
-		TokenCode:       aws.String(mfaTokenCode),
+		RoleArn:         &c.Role,
+		RoleSessionName: &c.Session,
+		DurationSeconds: &c.Duration,
+		SerialNumber:    &mfaSerialNumber,
+		TokenCode:       &mfaTokenCode,
 	})
 
 	if err != nil {
@@ -152,10 +164,9 @@ func (c *CmdAssume) getMfaSerialNumber(arn string) (string, error) {
 	session := iam.New(session.New())
 	re := regexp.MustCompile(`iam\:\:\d+\:\w+\/([\w=\-\,\.\=\@]+)`)
 	userName := re.FindStringSubmatch(arn)[1]
-
 	mfaDevice, err := session.ListMFADevices(&iam.ListMFADevicesInput{
-		MaxItems: aws.Int64(1),
-		UserName: aws.String(userName),
+		MaxItems: &maxMfaDevices,
+		UserName: &userName,
 	})
 
 	if err != nil {
