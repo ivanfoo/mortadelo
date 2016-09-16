@@ -6,7 +6,7 @@
 
 ### What for?
 
-Mortadelo makes assming AWS roles pretty simple, asking for temporary AWS credentials and dumping them to `~/.aws/credentials`
+![mortadelo](https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcS7kGHC5LSexHXZXyuKVKkFHGGfv_5_LlUFFPXHRpugG1wzYPmj) Mortadelo makes assming AWS roles pretty simple, asking for temporary AWS credentials and dumping them to `~/.aws/credentials`
 
 ### Installation
 
