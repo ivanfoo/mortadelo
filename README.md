@@ -1,12 +1,14 @@
 # Mortadelo CLI tool
 
-[![GitHub version](https://badge.fury.io/gh/ivanfoo%2Fmortadelo.svg)](https://badge.fury.io/gh/ivanfoo%2Fmortadelo) [![Build Status](https://travis-ci.org/ivanfoo/mortadelo.svg?branch=master)](https://travis-ci.org/ivanfoo/mortadelo) [![codecov](https://codecov.io/gh/ivanfoo/mortadelo/branch/master/graph/badge.svg)](https://codecov.io/gh/ivanfoo/mortadelo)
+![mortadelo](https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcS7kGHC5LSexHXZXyuKVKkFHGGfv_5_LlUFFPXHRpugG1wzYPmj) 
 
-`THIS TOOL IS UNDER HEAVY DEVELOPMENT`
+[![GitHub version](https://badge.fury.io/gh/ivanfoo%2Fmortadelo.svg)](https://badge.fury.io/gh/ivanfoo%2Fmortadelo) [![Build Status](https://travis-ci.org/ivanfoo/mortadelo.svg?branch=master)](https://travis-ci.org/ivanfoo/mortadelo) [![codecov](https://codecov.io/gh/ivanfoo/mortadelo/branch/master/graph/badge.svg)](https://codecov.io/gh/ivanfoo/mortadelo)
 
 ### What for?
 
-![mortadelo](https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcS7kGHC5LSexHXZXyuKVKkFHGGfv_5_LlUFFPXHRpugG1wzYPmj) Mortadelo makes assming AWS roles pretty simple, asking for temporary AWS credentials and dumping them to `~/.aws/credentials`
+Mortadelo makes assming AWS roles pretty simple, asking for temporary AWS credentials and dumping them to `~/.aws/credentials`
+
+#### USE IT WITH CAUTION: THIS TOOL IS UNDER HEAVY DEVELOPMENT ####
 
 ### Installation
 
