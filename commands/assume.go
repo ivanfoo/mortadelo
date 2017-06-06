@@ -187,6 +187,7 @@ func (c *CmdAssume) saveAWSCredentials(credentialsFile string) error {
 	cfg.Section(c.Session).NewKey("aws_access_key_id", c.credentials.AccessKey)
 	cfg.Section(c.Session).NewKey("aws_secret_access_key", c.credentials.SecretKey)
 	cfg.Section(c.Session).NewKey("aws_security_token", c.credentials.Token)
+	cfg.Section(c.Session).NewKey("aws_session_token", c.credentials.Token)
 
 	err = cfg.SaveTo(awsCredentialsFile)
 
