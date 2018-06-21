@@ -2,6 +2,7 @@ package commands
 
 import (
 	"fmt"
+	"os"
 
 	"gopkg.in/ini.v1"
 )
@@ -22,6 +23,12 @@ func (c *CmdConfigure) Execute(args []string) error {
 }
 
 func (c *CmdConfigure) setupNewAlias(aliasFile string) error {
+	pathErr := os.Mkdir(mortadeloDir, 0777)
+
+	//check if you need to panic, fallback or report
+	if pathErr != nil {
+		fmt.Println(pathErr)
+	}
 	cfg, err := ini.LooseLoad(aliasFile)
 
 	if err != nil {
