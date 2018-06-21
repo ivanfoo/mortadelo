@@ -57,7 +57,7 @@ Available commands:
 
 **Configuring a new alias file (~/.mortadelo/alias by default):**
 
-`mortadelo configure -a bar`-r arn:aws:iam::xxxxxxxxxxxx:role/bar`
+`mortadelo configure -a bar -r arn:aws:iam::xxxxxxxxxxxx:role/bar`
  
 
 **Alias file example**
