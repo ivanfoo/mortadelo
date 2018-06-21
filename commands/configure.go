@@ -25,7 +25,6 @@ func (c *CmdConfigure) Execute(args []string) error {
 func (c *CmdConfigure) setupNewAlias(aliasFile string) error {
 	pathErr := os.Mkdir(mortadeloDir, 0777)
 
-	//check if you need to panic, fallback or report
 	if pathErr != nil {
 		fmt.Println(pathErr)
 	}
