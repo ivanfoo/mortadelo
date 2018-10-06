@@ -13,19 +13,21 @@ const (
 	testAliasFile = "/tmp/alias_tests"
 )
 
-func TestCmdConfigure(t *testing.T) {
-	cmd := &CmdConfigure{
+func TestConfigureCommand(t *testing.T) {
+	cmd := &ConfigureCommand{
 		Alias: testAlias,
 		Arn:   testArn,
+		File:  testAliasFile,
 	}
 
-	cmd.setupNewAlias(testAliasFile)
+	cmd.filePath = testAliasFile
+	cmd.setAlias()
 
 	cfg, _ := ini.LooseLoad(testAliasFile)
 	alias, _ := cfg.GetSection(testAlias)
 
 	if alias.Name() != testAlias {
-		t.Fatalf("Expected %s, got %s", testAlias, alias.Name)
+		t.Fatalf("Expected %s, got %s", testAlias, alias.Name())
 	}
 
 	arn, _ := alias.GetKey("arn")

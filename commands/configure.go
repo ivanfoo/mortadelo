@@ -7,7 +7,7 @@ import (
 	"gopkg.in/ini.v1"
 )
 
-type CmdConfigure struct {
+type ConfigureCommand struct {
 	Alias string `short:"a" long:"alias" description:"role alias" required:"true"`
 	Arn   string `short:"r" long:"role" description:"arn role" required:"true"`
 	File  string `short:"f" long:"file" description:"alias file" default:"~/.mortadelo/alias"`
@@ -15,7 +15,7 @@ type CmdConfigure struct {
 	filePath string
 }
 
-func (c *CmdConfigure) Execute(args []string) error {
+func (c *ConfigureCommand) Execute(args []string) error {
 	c.filePath = expandPath(c.File)
 
 	err := c.createHome()
@@ -31,7 +31,7 @@ func (c *CmdConfigure) Execute(args []string) error {
 	return nil
 }
 
-func (c *CmdConfigure) createHome() error {
+func (c *ConfigureCommand) createHome() error {
 	path := filepath.Dir(c.filePath)
 	_, err := os.Stat(path)
 
@@ -47,7 +47,7 @@ func (c *CmdConfigure) createHome() error {
 	return nil
 }
 
-func (c *CmdConfigure) setAlias() error {
+func (c *ConfigureCommand) setAlias() error {
 	cfg, err := ini.LooseLoad(c.filePath)
 
 	if err != nil {
