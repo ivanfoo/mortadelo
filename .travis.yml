@@ -1,7 +1,7 @@
 language: go
 
 go:
-- 1.5
+- "1.11.1"
 
 before_install:
 - pip install --user codecov
@@ -22,9 +22,10 @@ deploy:
   provider: releases
   api_key:
     secure: droCQz8Kq5hL69V+aLKG5/taEDqVRzoZEvN/k/0Y+dEqEl3EA5D5fOcttIkTFbRSA/wzq1Nlp+LQ4HSrAGoe3Ao+1+5jkOl1FkQqdsbVI+gjge9NJdhvClYmyp9PKl0ShzckRERlOKKSKwuRjN3CHMXccTO4BLZD6QLOLFy3psdes+eruOcv8DMcZ4FFzpO9GLgmKRrYJDWuxZkgBX5Vlj0e7SiLfSJjqUt2E1HvQuS1jZYDCV2Q9hlZyCo0pgfHPRQ9WYKCUUikXPIcX/FoHDIjIyD+Tj9514ucGFPp56gvbsXQX1818r8rlmD4HWFzZK7+wwaoRUxfcIbQCtT5GI297n8H8mdhL/b3Vg4Rm7awNXYDQYcjLaKgztPaavTUZyj9w9HhMMLs567UwbhaD3mzdYQ5j7NuZvojc7fBPGPrkuY613jDdmjBzYQZAQnE6/w8wqscQ3CGRXSHavZ+zfC59o3FTbkazkR1lp4mSAtnl3306zOLk9QIlCvItlq+AxIgk/WMpIELgEucBws39BhMgqypB50rG7Vpd8SGMU1MnZ5VeK8ltBXL9eUqC4SIQ6qAK8/CZADUsy2fyWbHL9Cbg937fsvZ0D/5lMbhDC9k+TxyJWpskMTyVQ70d/Cx16OQ73flPKMbsOmKjsaYXe8CFGFmYKgqKGBp8vJeSTs=
-  file: 
+  file:
     - artifacts/mortadelo_${TRAVIS_TAG}_darwin_amd64.tgz
     - artifacts/mortadelo_${TRAVIS_TAG}_linux_amd64.tgz
+    - artifacts/mortadelo_${TRAVIS_TAG}_windows_amd64.tgz
   skip_cleanup: true
   on:
     repo: ivanfoo/mortadelo

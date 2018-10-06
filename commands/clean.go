@@ -2,56 +2,70 @@ package commands
 
 import (
 	"fmt"
+	"io/ioutil"
 	"os"
 )
 
-type CmdClean struct {
-	Force bool `short:"f" long:"force" description:"do not ask for permission before cleaning"`
+type CleanCommand struct {
+	Force  bool   `long:"force" description:"do not ask for permission before cleaning"`
+	File   string `short:"f" long:"file" description:"alias file" default:"~/.mortadelo/alias"`
+	Backup string `short:"b" long:"backup" description:"create backup file" default:""`
 }
 
-func (c *CmdClean) Execute(args []string) error {
+func (c *CleanCommand) Execute(args []string) error {
+	filePath := expandPath(c.File)
+
+	var ok bool
 	if c.Force {
-		err := os.Remove(awsCredentialsFile)
-
-		if err != nil {
-			return fmt.Errorf("delete " + awsCredentialsFile + " failed")
-		}
-
-		fmt.Println("deleted " + awsCredentialsFile)
-
-		os.Remove(aliasFile)
-
-		if err != nil {
-			return fmt.Errorf("delete " + aliasFile + " failed")
-		}
-
-		fmt.Println("deleted " + aliasFile)
-
-		return nil
+		ok = true
+	} else {
+		ok = c.askUser(filePath)
 	}
 
-	if userSayingYesToMessage("About to delete " + aliasFile + ". You sure? [y/n] ") {
-		os.Remove(aliasFile)
-		fmt.Println("done")
-	}
+	if ok {
+		if c.Backup != "" {
+			err := c.backup(filePath)
+			if err != nil {
+				return err
+			}
+		}
 
-	if userSayingYesToMessage("About to delete " + awsCredentialsFile + ". You sure? [y/n] ") {
-		os.Remove(awsCredentialsFile)
-		fmt.Println("done")
+		fmt.Printf("Removing %s...", filePath)
+		err := os.Remove(filePath)
+		if err != nil {
+			return err
+		}
+
+		fmt.Println("Done")
 	}
 
 	return nil
 }
 
-func userSayingYesToMessage(message string) bool {
-	fmt.Print(message)
-	var userInput string
-	fmt.Scanf("%s", &userInput)
+func (c *CleanCommand) askUser(path string) bool {
+	fmt.Printf("Delete %s (yes/no): ", path)
 
-	switch userInput {
-	case "y", "yes", "Yes":
+	var input string
+	fmt.Scanf("%s", &input)
+
+	if input == "yes" {
 		return true
+	} else {
+		fmt.Println("Aborted")
+		return false
+	}
+}
+
+func (c *CleanCommand) backup(path string) error {
+	content, err := ioutil.ReadFile(path)
+	if err != nil {
+		return err
 	}
 
-	return false
+	err = ioutil.WriteFile(c.Backup, content, 0644)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

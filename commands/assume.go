@@ -2,27 +2,26 @@ package commands
 
 import (
 	"fmt"
-	"regexp"
 
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/sts"
 	"gopkg.in/ini.v1"
 )
 
-var (
-	err           error
-	maxMfaDevices int64 = 1
-)
-
-type CmdAssume struct {
-	Alias    string `short:"a" long:"alias" description:"alias to use from roles file"`
-	Role     string `short:"r" long:"role" description:"arn role to use"`
-	Session  string `short:"s" long:"session" description:"session name to use"`
-	MFA      bool   `long:"mfa" description:"ask for a mfa token"`
+type AssumeCommand struct {
+	Alias    string `short:"a" long:"alias" description:"alias to assume (session name if using --role)" required:"true"`
+	Role     string `short:"r" long:"role" description:"literal arn role to assume instead of an alias" default:""`
+	MFA      bool   `long:"mfa" description:"ask for a mfa token code"`
 	Duration int64  `short:"d" long:"duration" description:"duration of the session in seconds" default:"900"`
+	File     string `short:"f" long:"file" description:"alias file" default:"~/.mortadelo/alias"`
+	Output   string `short:"o" long:"output" description:"file to store the AWS credentials" default:"~/.aws/credentials"`
 
+	session     *session.Session
 	credentials *awsCredentials
+
+	roleArn string
 }
 
 type awsCredentials struct {
@@ -31,168 +30,141 @@ type awsCredentials struct {
 	Token     string
 }
 
-func (c *CmdAssume) Execute(args []string) error {
-	err := c.validate()
+func (c *AssumeCommand) Execute(args []string) error {
+	var err error
+	var roleArn string
 
-	if err != nil {
-		return err
-	}
-
-	if c.MFA {
-		err = c.setAWSCredentialsUsingMFA()
+	if c.Role != "" {
+		roleArn = c.Role
 	} else {
-		err = c.setAWSCredentials()
-	}
-
-	if err != nil {
-		return err
-	}
-
-	err = c.saveAWSCredentials(awsCredentialsFile)
-
-	if err != nil {
-		return err
-	}
-
-	fmt.Println("temporary credentials saved in ~/.aws/credentials")
-
-	return nil
-}
-
-func (c *CmdAssume) validate() error {
-	if c.Alias != "" && c.Role == "" && c.Session == "" {
-		c.Role, err = c.getArnFromAliasFile(aliasFile)
+		roleArn, err = c.getRoleArn()
 		if err != nil {
 			return err
 		}
-		c.Session = c.Alias
-		return nil
-	} else if c.Alias == "" && c.Role != "" && c.Session != "" {
-		return nil
 	}
 
-	return fmt.Errorf("use either -a or -r flag")
-}
+	c.session = session.New()
 
-func (c *CmdAssume) setAWSCredentials() error {
-	session := sts.New(session.New())
+	var serialNumber string
+	var tokenCode string
 
-	var (
-		mfaTokenCode    string
-		mfaSerialNumber string
-	)
+	if c.MFA {
+		serialNumber, err = c.getMFASerialNumber()
+		if err != nil {
+			return err
+		}
 
-	resp, err := session.AssumeRole(&sts.AssumeRoleInput{
-		RoleArn:         &c.Role,
-		DurationSeconds: &c.Duration,
-		RoleSessionName: &c.Session,
-		SerialNumber:    &mfaSerialNumber,
-		TokenCode:       &mfaTokenCode,
-	})
+		tokenCode = c.askForTokenCode()
+	}
+
+	c.credentials, err = c.getCredentials(serialNumber, tokenCode, roleArn)
 
 	if err != nil {
-		return fmt.Errorf("unable to get valid aws credentials")
+		return err
 	}
 
-	c.credentials = &awsCredentials{
-		AccessKey: *resp.Credentials.AccessKeyId,
-		SecretKey: *resp.Credentials.SecretAccessKey,
-		Token:     *resp.Credentials.SessionToken,
+	err = c.saveCredentials()
+
+	if err != nil {
+		return err
 	}
+
+	fmt.Printf("temporary credentials saved in %s \n", c.Output)
 
 	return nil
 }
 
-func (c *CmdAssume) setAWSCredentialsUsingMFA() error {
-	session := sts.New(session.New())
-	identity, _ := session.GetCallerIdentity(&sts.GetCallerIdentityInput{})
-	mfaSerialNumber, err := c.getMfaSerialNumber(*identity.Arn)
+func (c *AssumeCommand) getMFASerialNumber() (string, error) {
+	service := iam.New(c.session)
+	userInfo, err := service.GetUser(&iam.GetUserInput{})
 
 	if err != nil {
-		return fmt.Errorf("unable to get a valid mfa serial number")
+		return "", err
 	}
 
-	var mfaTokenCode string
+	userName := *userInfo.User.UserName
+
+	mfaDevices, err := service.ListMFADevices(&iam.ListMFADevicesInput{
+		MaxItems: aws.Int64(1),
+		UserName: aws.String(userName),
+	})
+
+	if err != nil {
+		return "", err
+	}
+
+	return *mfaDevices.MFADevices[0].SerialNumber, nil
+}
+
+func (c *AssumeCommand) askForTokenCode() string {
+	var tokenCode string
 
 	fmt.Print("Insert MFA token: ")
-	fmt.Scanf("%s", &mfaTokenCode)
+	fmt.Scanf("%s", &tokenCode)
 
-	resp, err := session.AssumeRole(&sts.AssumeRoleInput{
-		RoleArn:         &c.Role,
-		RoleSessionName: &c.Session,
-		DurationSeconds: &c.Duration,
-		SerialNumber:    &mfaSerialNumber,
-		TokenCode:       &mfaTokenCode,
+	return tokenCode
+}
+
+func (c *AssumeCommand) getCredentials(serialNumber string, tokenCode string, roleArn string) (*awsCredentials, error) {
+	service := sts.New(c.session)
+	role, err := service.AssumeRole(&sts.AssumeRoleInput{
+		RoleSessionName: aws.String(c.Alias),
+		DurationSeconds: aws.Int64(c.Duration),
+		RoleArn:         aws.String(roleArn),
+		SerialNumber:    aws.String(serialNumber),
+		TokenCode:       aws.String(tokenCode),
 	})
 
 	if err != nil {
-		return fmt.Errorf("unable to get valid aws credentials")
+		return nil, err
 	}
 
-	c.credentials = &awsCredentials{
-		AccessKey: *resp.Credentials.AccessKeyId,
-		SecretKey: *resp.Credentials.SecretAccessKey,
-		Token:     *resp.Credentials.SessionToken,
+	credentials := &awsCredentials{
+		AccessKey: *role.Credentials.AccessKeyId,
+		SecretKey: *role.Credentials.SecretAccessKey,
+		Token:     *role.Credentials.SessionToken,
 	}
 
-	return nil
+	return credentials, nil
 }
 
-func (c *CmdAssume) getArnFromAliasFile(aliasFile string) (string, error) {
-	file, err := ini.Load(aliasFile)
+func (c *AssumeCommand) getRoleArn() (string, error) {
+	path := expandPath(c.File)
+	file, err := ini.Load(path)
 
 	if err != nil {
-		return "", fmt.Errorf("unable to open " + aliasFile)
+		return "", err
 	}
 
 	alias, err := file.GetSection(c.Alias)
 
 	if err != nil {
-		return "", fmt.Errorf("alias not found in file")
+		return "", err
 	}
 
 	arn, err := alias.GetKey("arn")
 
 	if err != nil {
-		return "", fmt.Errorf("malformed alias file: missing arn key")
+		return "", err
 	}
 
 	return arn.String(), nil
 }
 
-func (c *CmdAssume) getMfaSerialNumber(arn string) (string, error) {
-	session := iam.New(session.New())
-	re := regexp.MustCompile(`iam\:\:\d+\:\w+\/([\w=\-\,\.\=\@]+)`)
-	userName := re.FindStringSubmatch(arn)[1]
-	mfaDevice, err := session.ListMFADevices(&iam.ListMFADevicesInput{
-		MaxItems: &maxMfaDevices,
-		UserName: &userName,
-	})
+func (c *AssumeCommand) saveCredentials() error {
+	path := expandPath(c.Output)
+	cfg, err := ini.LooseLoad(path)
+
+	cfg.NewSection(c.Alias)
+	cfg.Section(c.Alias).NewKey("aws_access_key_id", c.credentials.AccessKey)
+	cfg.Section(c.Alias).NewKey("aws_secret_access_key", c.credentials.SecretKey)
+	cfg.Section(c.Alias).NewKey("aws_security_token", c.credentials.Token)
+	cfg.Section(c.Alias).NewKey("aws_session_token", c.credentials.Token)
+
+	err = cfg.SaveTo(path)
 
 	if err != nil {
-		return "", fmt.Errorf("unable to get a valid mfa serial number")
-	}
-
-	return *mfaDevice.MFADevices[0].SerialNumber, nil
-}
-
-func (c *CmdAssume) saveAWSCredentials(credentialsFile string) error {
-	cfg, err := ini.LooseLoad(awsCredentialsFile)
-
-	if err != nil {
-		fmt.Println("creating new credentials file...")
-	}
-
-	cfg.NewSection(c.Session)
-	cfg.Section(c.Session).NewKey("aws_access_key_id", c.credentials.AccessKey)
-	cfg.Section(c.Session).NewKey("aws_secret_access_key", c.credentials.SecretKey)
-	cfg.Section(c.Session).NewKey("aws_security_token", c.credentials.Token)
-	cfg.Section(c.Session).NewKey("aws_session_token", c.credentials.Token)
-
-	err = cfg.SaveTo(awsCredentialsFile)
-
-	if err != nil {
-		return fmt.Errorf("saving credentials file failed")
+		return err
 	}
 
 	return nil
