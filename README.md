@@ -55,7 +55,7 @@ Available commands:
 
 **Using an explicit arn role with MFA:**
 
-`mortadelo assume --mfa -r arn:aws:iam::xxxxxxxxxxxx:role/foo -s foo`
+`mortadelo assume --mfa --alias foo --role arn:aws:iam::xxxxxxxxxxxx:role/foo`
 
 **Alias file example**
 
