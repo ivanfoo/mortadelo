@@ -23,7 +23,7 @@ ARTIFACTS_PATH := $(PWD)/artifacts
 BUILD ?= $(shell date +"%m-%d-%Y_%H_%M_%S")
 COMMIT ?= $(shell git log --format='%H' -n 1 | cut -c1-10)
 BRANCH := $(shell git rev-parse --abbrev-ref HEAD)
-PKG_OS = darwin linux
+PKG_OS = darwin linux windows
 PKG_ARCH = amd64
 
 # Travis-CI

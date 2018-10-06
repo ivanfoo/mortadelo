@@ -25,6 +25,7 @@ deploy:
   file:
     - artifacts/mortadelo_${TRAVIS_TAG}_darwin_amd64.tgz
     - artifacts/mortadelo_${TRAVIS_TAG}_linux_amd64.tgz
+    - artifacts/mortadelo_${TRAVIS_TAG}_windows_amd64.tgz
   skip_cleanup: true
   on:
     repo: ivanfoo/mortadelo
