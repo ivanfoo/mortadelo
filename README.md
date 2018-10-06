@@ -2,7 +2,7 @@
 
 [![GitHub version](https://badge.fury.io/gh/ivanfoo%2Fmortadelo.svg)](https://badge.fury.io/gh/ivanfoo%2Fmortadelo) [![Build Status](https://travis-ci.org/ivanfoo/mortadelo.svg?branch=master)](https://travis-ci.org/ivanfoo/mortadelo) [![codecov](https://codecov.io/gh/ivanfoo/mortadelo/branch/master/graph/badge.svg)](https://codecov.io/gh/ivanfoo/mortadelo)
 
-![mortadelo img](https://encrypted-tbn3.gstatic.com/images?q=tbn:ANd9GcS7kGHC5LSexHXZXyuKVKkFHGGfv_5_LlUFFPXHRpugG1wzYPmj) 
+![mortadelo img](https://weirdspace.dk/FranciscoIbanez/Graphics/Mortadelo.gif)
 
 ### What for?
 
@@ -58,7 +58,7 @@ Available commands:
 **Configuring a new alias file (~/.mortadelo/alias by default):**
 
 `mortadelo configure -a bar -r arn:aws:iam::xxxxxxxxxxxx:role/bar`
- 
+
 
 **Alias file example**
 
