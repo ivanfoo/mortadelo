@@ -53,7 +53,7 @@ Available commands:
 
 `mortadelo assume --alias foo --role arn:aws:iam::xxxxxxxxxxxx:role/foo`
 
-**Using an explicit arn role with MFA:**
+**Assume a literal role arn with MFA:**
 
 `mortadelo assume --mfa --alias foo --role arn:aws:iam::xxxxxxxxxxxx:role/foo`
 
