@@ -10,13 +10,12 @@ import (
 
 func main() {
 	parser := flags.NewNamedParser("mortadelo", flags.Default)
-	parser.AddCommand("assume", "assume role", "", &commands.CmdAssume{})
-	parser.AddCommand("clean", "clean generated files", "", &commands.CmdClean{})
+	parser.AddCommand("assume", "assume role", "", &commands.AssumeCommand{})
+	parser.AddCommand("clean", "clean generated files", "", &commands.CleanCommand{})
 	parser.AddCommand("configure", "configure roles alias file", "", &commands.CmdConfigure{})
 
 	_, err := parser.Parse()
 	if err != nil {
 		os.Exit(1)
 	}
-
 }
