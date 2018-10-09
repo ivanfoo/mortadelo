@@ -107,13 +107,25 @@ func (c *AssumeCommand) askForTokenCode() string {
 
 func (c *AssumeCommand) getCredentials(serialNumber string, tokenCode string, roleArn string) (*awsCredentials, error) {
 	service := sts.New(c.session)
-	role, err := service.AssumeRole(&sts.AssumeRoleInput{
-		RoleSessionName: aws.String(c.Alias),
-		DurationSeconds: aws.Int64(c.Duration),
-		RoleArn:         aws.String(roleArn),
-		SerialNumber:    aws.String(serialNumber),
-		TokenCode:       aws.String(tokenCode),
-	})
+
+	var stsRequest *sts.AssumeRoleInput
+	if c.MFA {
+		stsRequest = &sts.AssumeRoleInput{
+			RoleSessionName: aws.String(c.Alias),
+			DurationSeconds: aws.Int64(c.Duration),
+			RoleArn:         aws.String(roleArn),
+			SerialNumber:    aws.String(serialNumber),
+			TokenCode:       aws.String(tokenCode),
+		}
+	} else {
+		stsRequest = &sts.AssumeRoleInput{
+			RoleSessionName: aws.String(c.Alias),
+			DurationSeconds: aws.Int64(c.Duration),
+			RoleArn:         aws.String(roleArn),
+		}
+	}
+
+	role, err := service.AssumeRole(stsRequest)
 
 	if err != nil {
 		return nil, err
