@@ -13,9 +13,9 @@ Mortadelo makes assming AWS roles pretty simple, asking for temporary AWS creden
 You should install the latest compiled release (recommended):
 
 ```
-wget https://github.com/ivanfoo/mortadelo/releases/download/v0.3.0/mortadelo_v0.3.0_linux_amd64.tgz
-tar xfv mortadelo_v0.3.0_linux_amd64.tgz
-cp mortadelo_v0.3.0_linux_amd64/mortadelo /usr/local/bin/
+wget https://github.com/ivanfoo/mortadelo/releases/download/v0.3.1/mortadelo_v0.3.1_linux_amd64.tgz
+tar xfv mortadelo_v0.3.1_linux_amd64.tgz
+cp mortadelo_v0.3.1_linux_amd64/mortadelo /usr/local/bin/
 ```
 
 Also, you can get the latest changes running the classical:
