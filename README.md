@@ -6,7 +6,7 @@
 
 ### What for?
 
-Mortadelo makes assming AWS roles pretty simple, asking for temporary AWS credentials and dumping them to a file (`~/.aws/credentials` by default)
+Mortadelo makes assuming AWS roles pretty simple, asking for temporary AWS credentials and dumping them to a file (`~/.aws/credentials` by default)
 
 ### Installation
 
